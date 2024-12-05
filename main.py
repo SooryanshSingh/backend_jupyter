@@ -4,15 +4,10 @@ import io
 import json
 from io import StringIO
 from typing import Dict
+from models import NotebookSession, active_notebooks
 
 app = FastAPI()
 
-active_notebooks: Dict[str, 'NotebookSession'] = {}
-
-class NotebookSession:
-    def __init__(self, websocket: WebSocket):
-        self.websocket = websocket
-        self.execution_globals = {}
 
 @app.websocket("/ws/notebook/{notebook_id}/run/")
 async def websocket_run_code(websocket: WebSocket, notebook_id: str):
