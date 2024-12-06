@@ -6,12 +6,8 @@
     <title>Notebook Test</title>
 </head>
 <body>
-    <h1>Test Flask Notebook API</h1>
+    <h1>Flask Code Runner</h1>
     <form id="codeForm">
-        <label for="notebookId">Notebook ID:</label>
-        <!-- Default value set to 'test_notebook' -->
-        <input type="text" id="notebookId" value="test_notebook" placeholder="Enter notebook ID" required>
-        <br><br>
         <label for="codeInput">Code to Execute:</label>
         <textarea id="codeInput" rows="10" cols="50" placeholder="Write your Python code here..." required></textarea>
         <br><br>
@@ -27,7 +23,7 @@
         form.addEventListener("submit", async (event) => {
             event.preventDefault();
 
-            const notebookId = document.getElementById("notebookId").value;
+            const notebookId = "1";  
             const code = document.getElementById("codeInput").value;
 
             const url = `http://127.0.0.1:5000/notebook/${notebookId}/run/`;
@@ -42,8 +38,7 @@
                 });
 
                 const result = await response.json();
-                // Only display the 'output' field from the JSON response
-                responseOutput.textContent = result.output || "No output generated."; // Display the output or a default message
+                responseOutput.textContent = result.output || "No output generated."; 
             } catch (error) {
                 responseOutput.textContent = "Error: " + error.message;
             }

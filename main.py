@@ -1,25 +1,37 @@
-from flask import Flask, render_template, request, jsonify 
+from flask import Flask, render_template, request, jsonify
 import sys
 import io
 from io import StringIO
-from models import NotebookSession, active_notebooks
+import os
+from dotenv import load_dotenv
+from supabase import create_client
+
+load_dotenv()
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_API_KEY = os.getenv("SUPABASE_API_KEY")
+print("Supabase URL:", os.getenv("SUPABASE_URL"))
+print("Supabase API Key:", os.getenv("SUPABASE_API_KEY"))
+
+supabase = create_client(SUPABASE_URL, SUPABASE_API_KEY)
 
 app = Flask(__name__)
-notebook_id = "test_notebook"
-active_notebooks[notebook_id] = NotebookSession(notebook_id)
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
+
 @app.route("/notebook/<notebook_id>/run/", methods=["POST"])
 def run_code(notebook_id):
-    if notebook_id not in active_notebooks:
-        return jsonify({"detail": "Notebook session not found"}), 404
+    response = supabase.table('notebooks').select('notebook_id', 'name').eq('notebook_id', notebook_id).execute()
 
-    session = active_notebooks[notebook_id]
+    if not response.data:
+        return jsonify({"detail": "Notebook not found"}), 404
+
+    notebook = response.data[0]
+    
     data = request.get_json()
-
     if not data or "code" not in data:
         return jsonify({"detail": "No code provided"}), 400
 
@@ -40,7 +52,7 @@ def run_code(notebook_id):
         old_stdout = sys.stdout
         new_output = sys.stdout = StringIO()
 
-        exec(code, session.execution_globals)
+        exec(code, {})
 
         sys.stdout = old_stdout
         output = new_output.getvalue()
