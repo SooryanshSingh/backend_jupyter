@@ -1,46 +1,65 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from flask import Flask, render_template, request, jsonify 
 import sys
 import io
-import json
 from io import StringIO
-from typing import Dict
 from models import NotebookSession, active_notebooks
 
-app = FastAPI()
+app = Flask(__name__)
+notebook_id = "test_notebook"
+active_notebooks[notebook_id] = NotebookSession(notebook_id)
 
+@app.route("/")
+def index():
+    return render_template("index.html")
 
-@app.websocket("/ws/notebook/{notebook_id}/run/")
-async def websocket_run_code(websocket: WebSocket, notebook_id: str):
-    await websocket.accept()
+@app.route("/notebook/<notebook_id>/run/", methods=["POST"])
+def run_code(notebook_id):
+    if notebook_id not in active_notebooks:
+        return jsonify({"detail": "Notebook session not found"}), 404
 
-    session = NotebookSession(websocket)
-    active_notebooks[notebook_id] = session
+    session = active_notebooks[notebook_id]
+    data = request.get_json()
+
+    if not data or "code" not in data:
+        return jsonify({"detail": "No code provided"}), 400
+
+    code = data["code"]
+    
+    try:
+        compile(code, "<string>", "exec")
+    except IndentationError as e:
+        return jsonify({
+            "output": f"Indentation error: {str(e)}"
+        }), 400
+    except SyntaxError as e:
+        return jsonify({
+            "output": f"Syntax error: {str(e)}"
+        }), 400
 
     try:
-        while True:
-            data = await websocket.receive_json()
-            print(data)
-            if "code" in data:
-                code = data["code"]
-                try:
-                    old_stdout = sys.stdout
-                    new_output = sys.stdout = StringIO()
-                    
-                    exec(code, session.execution_globals)
-                    
-                    sys.stdout = old_stdout
-                    output = new_output.getvalue()
+        old_stdout = sys.stdout
+        new_output = sys.stdout = StringIO()
 
-                    if not output:
-                        output = "No output generated."
-                except Exception as e:
-                    sys.stdout = old_stdout
-                    output = f"Error: {str(e)}"
+        exec(code, session.execution_globals)
 
-                await websocket.send_json({
-                    "output": output,
-                    "notebook_id": notebook_id
-                })
-    except WebSocketDisconnect:
-        print(f"WebSocket disconnected for notebook {notebook_id}")
-        del active_notebooks[notebook_id]
+        sys.stdout = old_stdout
+        output = new_output.getvalue()
+
+        output = output.rstrip('\n')
+
+        if not output:
+            output = "No output generated."
+
+        return jsonify({
+            "output": output
+        })
+        
+    except Exception as e:
+        sys.stdout = old_stdout
+        output = f"Error: {str(e)}"
+        return jsonify({
+            "output": output
+        }), 500
+
+if __name__ == "__main__":
+    app.run(debug=True)

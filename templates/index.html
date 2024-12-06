@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notebook Test</title>
+</head>
+<body>
+    <h1>Test Flask Notebook API</h1>
+    <form id="codeForm">
+        <label for="notebookId">Notebook ID:</label>
+        <!-- Default value set to 'test_notebook' -->
+        <input type="text" id="notebookId" value="test_notebook" placeholder="Enter notebook ID" required>
+        <br><br>
+        <label for="codeInput">Code to Execute:</label>
+        <textarea id="codeInput" rows="10" cols="50" placeholder="Write your Python code here..." required></textarea>
+        <br><br>
+        <button type="submit">Run Code</button>
+    </form>
+    <h2>Response</h2>
+    <pre id="responseOutput">Response will appear here...</pre>
+
+    <script>
+        const form = document.getElementById("codeForm");
+        const responseOutput = document.getElementById("responseOutput");
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const notebookId = document.getElementById("notebookId").value;
+            const code = document.getElementById("codeInput").value;
+
+            const url = `http://127.0.0.1:5000/notebook/${notebookId}/run/`;
+
+            try {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ code: code })
+                });
+
+                const result = await response.json();
+                // Only display the 'output' field from the JSON response
+                responseOutput.textContent = result.output || "No output generated."; // Display the output or a default message
+            } catch (error) {
+                responseOutput.textContent = "Error: " + error.message;
+            }
+        });
+    </script>
+</body>
+</html>
