@@ -3,46 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notebook Test</title>
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Notebook</title>
 </head>
 <body>
-    <h1>Flask Code Runner</h1>
-    <form id="codeForm">
-        <label for="codeInput">Code to Execute:</label>
-        <textarea id="codeInput" rows="10" cols="50" placeholder="Write your Python code here..." required></textarea>
-        <br><br>
-        <button type="submit">Run Code</button>
-    </form>
-    <h2>Response</h2>
-    <pre id="responseOutput">Response will appear here...</pre>
+    <header>Code Runner</header>
+    <button id="addCell">Add Cell</button>
+    <div id="cellsContainer"></div>
 
-    <script>
-        const form = document.getElementById("codeForm");
-        const responseOutput = document.getElementById("responseOutput");
-
-        form.addEventListener("submit", async (event) => {
-            event.preventDefault();
-
-            const notebookId = "1";  
-            const code = document.getElementById("codeInput").value;
-
-            const url = `http://127.0.0.1:5000/notebook/${notebookId}/run/`;
-
-            try {
-                const response = await fetch(url, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ code: code })
-                });
-
-                const result = await response.json();
-                responseOutput.textContent = result.output || "No output generated."; 
-            } catch (error) {
-                responseOutput.textContent = "Error: " + error.message;
-            }
-        });
-    </script>
+    
 </body>
 </html>
