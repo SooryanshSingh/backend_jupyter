@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, redirect, url_for, session
 import sys
 from io import StringIO
 import os
@@ -15,32 +15,59 @@ SUPABASE_API_KEY = os.getenv("SUPABASE_API_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_API_KEY)
 
 app = Flask(__name__)
-app.degug=True
+app.secret_key = os.getenv("SECRET_KEY", "your-secret-key")
+app.debug = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'  # Allows the session cookie to be sent across sites
+app.config['SESSION_COOKIE_SECURE'] = False  # For development purposes, False means cookies will not require HTTPS
+
+# Routes for authentication and navigation
 @app.route("/")
-def index():
-    return render_template("index.html")
+def home():
+        return redirect(url_for("homepage"))
+
+@app.route("/signin", methods=["GET", "POST"])
+def signin():
+
+    return render_template("signin.html")
+
+
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    
+    return render_template("signup.html")
+
+@app.route("/logout")
+def logout():
+    return redirect(url_for("homepage"))  # Redirect to sign-in page
+
+@app.route("/homepage", methods=["GET"])
+def homepage():
+    if 'user' not in session:
+        print("User is not logged in")
+    else:
+        print("User is logged in:", session['user'])
+    return render_template("homepage.html")
+
+@app.route("/code")
+def code():
+    return render_template("code.html")
+
 @app.route("/notebook/<notebook_id>/cell/<cell_id>/run/", methods=["POST"])
 def run_cell_code(notebook_id, cell_id):
-    print(f"Received notebook_id: {notebook_id}, cell_id: {cell_id}")  # Log received values
+    print(f"Received notebook_id: {notebook_id}, cell_id: {cell_id}")
 
     # Fetch cell data
     response = supabase.table('cells').select('cell_id', 'notebook_id', 'code').eq('cell_id', cell_id).eq('notebook_id', notebook_id).execute()
 
-    print(f"Response from supabase: {response}")  # Log the response data from supabase
-
     if not response.data:
-        print("Cell not found!")
         return jsonify({"detail": "Cell not found"}), 404
 
     cell = response.data[0]
-    print(f"Cell data: {cell}")  # Log the cell data
 
     # Get code from the request
     data = request.get_json()
-    print(f"Received data: {data}")  # Log the data received in the request
 
     if not data or "code" not in data:
-        print("No code provided!")
         return jsonify({"detail": "No code provided"}), 400
 
     code = data["code"]
@@ -49,10 +76,8 @@ def run_cell_code(notebook_id, cell_id):
         # Validate the code syntax
         compile(code, "<string>", "exec")
     except IndentationError as e:
-        print(f"Indentation error: {str(e)}")
         return jsonify({"output": f"Indentation error: {str(e)}"}), 400
     except SyntaxError as e:
-        print(f"Syntax error: {str(e)}")
         return jsonify({"output": f"Syntax error: {str(e)}"}), 400
 
     try:
@@ -62,50 +87,34 @@ def run_cell_code(notebook_id, cell_id):
 
         exec(code, {})
 
-        # Restore stdout and fetch the output
         sys.stdout = old_stdout
         output = new_output.getvalue().strip()
 
         if not output:
             output = "No output generated."
 
-        print(f"Output from execution: {output}")  # Log the output
-
         return jsonify({"output": output})
 
     except Exception as e:
-        # Restore stdout and log the exception
         sys.stdout = old_stdout
-        print(f"Error while executing code: {str(e)}")
         return jsonify({"output": f"Error: {str(e)}"}), 500
-
 
 @app.route("/notebook/<notebook_id>/add_cell/", methods=["POST"])
 def add_cell(notebook_id):
     try:
-        # Insert a new cell into the database
         new_cell = supabase.table("cells").insert({"notebook_id": notebook_id, "code": ""}).execute()
-
-        # Debugging: log the new cell data
-        print("New cell response:", new_cell)
 
         if not new_cell.data:
             return jsonify({"detail": "Failed to create cell"}), 500
 
-        # Ensure we're returning the correct 'id' from the inserted cell
         return jsonify(new_cell.data[0]), 201
 
     except Exception as e:
-        print(f"Error occurred: {str(e)}")
         return jsonify({"error": str(e)}), 500
-
-   
-
 
 @app.route("/notebook/<notebook_id>/cells/", methods=["GET"])
 def get_cells(notebook_id):
     try:
-        # Fetch all cells for a specific notebook
         response = supabase.table("cells").select("*").eq("notebook_id", notebook_id).execute()
 
         if not response.data:
@@ -116,6 +125,26 @@ def get_cells(notebook_id):
         return jsonify({"error": str(e)}), 500
 
 
+app.route("/store-session", methods=["POST"])
+def store_session():
+    data = request.get_json()
+    token = data.get("token")  # Extract token from request
+    if not token:
+        return jsonify({"success": False, "error": "Missing token"}), 400
+
+    try:
+        # Validate token and get user info from Supabase
+        user_info = supabase.auth.get_user(token)
+        email = user_info.get("email")
+        if email:
+            session["user"] = {"email": email}
+            return jsonify({"success": True}), 200
+        else:
+            return jsonify({"success": False, "error": "Invalid token"}), 401
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+
 if __name__ == "__main__":
     app.run(debug=True)
-

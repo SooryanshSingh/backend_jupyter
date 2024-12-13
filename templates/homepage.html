@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notes Homepage</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+<body>
+  <header>
+    <h1>JUPYTER NOTEBOOK</h1>
+ <a href="{{ url_for('logout') }}"><button id="logout" style="display: none;">Logout</button></a>
+
+ <a href="{{ url_for('signin') }}"><button id="signin">Sign In</button></a>
+ <a href="{{ url_for('signup') }}"><button id="signup">Sign Up</button></a>
+  </header>
+
+  <main>
+    <button id="add-note" class="add-note-button">    <a href="{{ url_for('code') }}">Go to Code Page</a></button>
+    <div class="notes-container">
+      <ul id="notes-list"></ul>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.3/dist/umd/supabase.min.js"></script>
+  <script src="{{ url_for('static', filename='config.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='homepage.js') }}" defer></script>
+
+  
+</body>
+</html>

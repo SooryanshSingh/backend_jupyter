@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign Up</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+<body>
+    <div class="container">
+  <div class="auth-container">
+    <h1>Sign Up</h1>
+    <form id="signup-form">
+      <input type="text" id="signup-email" placeholder="Enter Username" required>
+      <input type="password" id="signup-password" placeholder="Enter Password" required>
+      <button type="submit" id="signup-btn">Sign Up</button>
+    </form>
+    <p id="signup-error-message"></p>
+    <p>Already have an account? <a href="signin.html">Sign In</a></p>
+  </div>
+</div>
+
+<script src="
+https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.3/dist/umd/supabase.min.js
+"></script>
+<script src="{{ url_for('static', filename='config.js') }}" defer></script>
+
+<script src="{{ url_for('static', filename='signup.js') }}" defer></script>
+
+
+
+
+</body>
+</html>
