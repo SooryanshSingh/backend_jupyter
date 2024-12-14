@@ -1,4 +1,31 @@
-  const cellsContainer = document.getElementById("cellsContainer");
+const supabaseurl = window.config.SUPABASE_URL;
+const supabasekey = window.config.SUPABASE_KEY;
+
+const supabaseclient = supabase.createClient(supabaseurl, supabasekey);
+
+async function checkUser() {
+  try {
+   
+    const { data: { user }, error: userError } = await supabaseclient.auth.getUser();
+
+
+    if (user) {
+      console.log("User is logged in:", user);
+    } else {
+      console.log("No user is logged in");
+      window.location.href = '/signin'; 
+    }
+  } catch (err) {
+    console.error("Unexpected error:", err.message);
+  }
+}
+
+
+
+
+
+ 
+ const cellsContainer = document.getElementById("cellsContainer");
         const addCellButton = document.getElementById("addCell");
   const mark= document.getElementById("addMark");
         const notebookId = "1";
@@ -227,6 +254,7 @@
                 outputDiv.innerText = `Error: ${error.message}`;
             });
         }
+        checkUser();
                         
         loadCells();
         loadMark();
