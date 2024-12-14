@@ -146,5 +146,21 @@ def store_session():
 
 
 
+
+
+@app.route("/notebook/<notebook_id>/cell/<cell_id>/delete/", methods=["DELETE"])
+def delete_cell(notebook_id, cell_id):
+    try:
+        # Delete the cell from the database
+        response = supabase.table("cells").delete().eq("notebook_id", notebook_id).eq("cell_id", cell_id).execute()
+
+        if not response.data:
+            return jsonify({"detail": "Cell not found or already deleted"}), 404
+
+        return jsonify({"message": "Cell deleted successfully"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     app.run(debug=True)
+

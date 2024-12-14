@@ -3,7 +3,9 @@ body{
   padding: 0;
   margin: 0;
 }
-
+a{
+  color: red;
+}
 .container {
   padding: 0;
   margin: 0;

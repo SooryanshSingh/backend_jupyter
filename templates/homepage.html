@@ -16,14 +16,12 @@
  <a href="{{ url_for('signup') }}"><button id="signup">Sign Up</button></a>
   </header>
 
-  <main>
-    <button id="add-note" class="add-note-button">    <a href="{{ url_for('code') }}">Go to Code Page</a></button>
-    <div class="notes-container">
-      <ul id="notes-list"></ul>
-    </div>
-  </main>
+    <button >    <a style="color: white" href="{{ url_for('code') }}">Go to Code Page</a></button>
+  
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.3/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
   <script src="{{ url_for('static', filename='config.js') }}" defer></script>
   <script src="{{ url_for('static', filename='homepage.js') }}" defer></script>
 
