@@ -125,27 +125,6 @@ def get_cells(notebook_id):
         return jsonify({"error": str(e)}), 500
 
 
-app.route("/store-session", methods=["POST"])
-def store_session():
-    data = request.get_json()
-    token = data.get("token")  # Extract token from request
-    if not token:
-        return jsonify({"success": False, "error": "Missing token"}), 400
-
-    try:
-        # Validate token and get user info from Supabase
-        user_info = supabase.auth.get_user(token)
-        email = user_info.get("email")
-        if email:
-            session["user"] = {"email": email}
-            return jsonify({"success": True}), 200
-        else:
-            return jsonify({"success": False, "error": "Invalid token"}), 401
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
-
-
-
 
 
 @app.route("/notebook/<notebook_id>/cell/<cell_id>/delete/", methods=["DELETE"])
@@ -161,6 +140,69 @@ def delete_cell(notebook_id, cell_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+
+
+@app.route("/notebook/add_mark/", methods=["POST"])
+def add_markup():
+    try:
+        new_cell = supabase.table("markup").insert({"code": ""}).execute()
+
+        if not new_cell.data:
+            return jsonify({"detail": "Failed to create cell"}), 500
+
+        return jsonify(new_cell.data[0]), 201
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/notebook/markup/<cell_id>/delete/", methods=["DELETE"])
+def delete_markup(cell_id):
+    try:
+        print("OK")
+        response = supabase.table("markup").delete().eq("id", cell_id).execute()
+
+        if response.data is None or len(response.data) == 0:
+            return jsonify({"detail": "Cell not found or already deleted"}), 404
+
+        return jsonify({"message": "Cell deleted successfully"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+from flask import Flask, jsonify, request
+import markdown
+
+
+@app.route("/notebook/markup/<cell_id>/run/", methods=["POST"])
+def render_markdown(cell_id):
+    try:
+        # Get the Markdown code from the POST request body
+        data = request.get_json()
+        markup_text = data.get("code", "")
+
+        # Convert the Markdown text to HTML using the markdown library
+        html_output = markdown.markdown(markup_text)
+
+        # Return the rendered HTML as part of the response
+        return jsonify({"rendered_html": html_output}), 200
+
+    except Exception as e:
+        # Return an error message if an exception occurs
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/notebook/mark/", methods=["GET"])
+def get_mark():
+    try:
+        response = supabase.table("cells").select("*").execute()
+
+        if not response.data:
+            return jsonify([]), 200
+
+        return jsonify(response.data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == "__main__":
     app.run(debug=True)
-
