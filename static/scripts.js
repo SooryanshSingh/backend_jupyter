@@ -153,7 +153,7 @@ async function checkUser() {
         
                 <button class="save-note" onclick="runMark(${cellId})">Run Markup</button>
                 <button class="delete-note" onclick="deleteMark(${cellId})">Delete Cell</button>
-                <div class="output" id="output-${cellId}">Output will appear here...</div>
+                <div class="output" id="outputm-${cellId}">Output will appear here...</div>
             `;
         
             cellsContainer.appendChild(cellDiv);
@@ -207,7 +207,7 @@ async function checkUser() {
         }
         function runMark (cellId) {
             const codeInput = document.getElementById(`code-${cellId}`);
-            const outputDiv = document.getElementById(`output-${cellId}`);
+            const outputDiv = document.getElementById(`outputm-${cellId}`);
         
             if (!codeInput || !outputDiv) {
                 return;

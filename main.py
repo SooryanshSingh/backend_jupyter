@@ -71,6 +71,7 @@ def run_cell_code(notebook_id, cell_id):
         return jsonify({"detail": "No code provided"}), 400
 
     code = data["code"]
+    supabase.table('cells').update({"code": code}).eq("cell_id", cell_id).execute()
 
     try:
         # Validate the code syntax
@@ -177,25 +178,21 @@ import markdown
 @app.route("/notebook/markup/<cell_id>/run/", methods=["POST"])
 def render_markdown(cell_id):
     try:
-        # Get the Markdown code from the POST request body
         data = request.get_json()
         markup_text = data.get("code", "")
-
-        # Convert the Markdown text to HTML using the markdown library
+        supabase.table('markup').update({"code": markup_text}).eq("id", cell_id).execute()
         html_output = markdown.markdown(markup_text)
-
-        # Return the rendered HTML as part of the response
+        print("saved markup")
         return jsonify({"rendered_html": html_output}), 200
 
     except Exception as e:
-        # Return an error message if an exception occurs
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/notebook/mark/", methods=["GET"])
 def get_mark():
     try:
-        response = supabase.table("cells").select("*").execute()
+        response = supabase.table("markup").select("*").execute()
 
         if not response.data:
             return jsonify([]), 200
