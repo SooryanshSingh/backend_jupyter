@@ -9,7 +9,7 @@
 </head>
 <body>
   <header>
-    <h1>JUPYTER NOTEBOOK</h1>
+    <h1>PyLab</h1>
  <a href="{{ url_for('logout') }}"><button id="logout" style="display: none;">Logout</button></a>
 
  <a href="{{ url_for('signin') }}"><button id="signin">Sign In</button></a>
@@ -17,7 +17,15 @@
   </header>
 
     <button >    <a style="color: white" href="{{ url_for('code') }}">Go to Code Page</a></button>
-  
+    
+    <div style="background-color: lightyellow; padding: 20px;">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-top: 50px;">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="PyLab Logo" style="max-width: 250px;">
+      <p style="font-size: 1.2rem; font-weight: bold; color: #333; margin-top: 10px;">Code Python in the browser effortlessly!</p>
+      <p style="font-size: 1.2rem; font-weight: bold; color: #333; margin-top: 10px;">Markup also supported</p>
+    </div>
+  </div>
+    
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.47.3/dist/umd/supabase.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>

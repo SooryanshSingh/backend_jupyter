@@ -4,6 +4,7 @@ from io import StringIO
 import os
 from dotenv import load_dotenv
 from supabase import create_client
+import markdown
 
 # Load environment variables
 load_dotenv()
@@ -82,7 +83,6 @@ def run_cell_code(notebook_id, cell_id):
         return jsonify({"output": f"Syntax error: {str(e)}"}), 400
 
     try:
-        # Capture stdout to get the code output
         old_stdout = sys.stdout
         new_output = sys.stdout = StringIO()
 
@@ -171,8 +171,6 @@ def delete_markup(cell_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-from flask import Flask, jsonify, request
-import markdown
 
 
 @app.route("/notebook/markup/<cell_id>/run/", methods=["POST"])

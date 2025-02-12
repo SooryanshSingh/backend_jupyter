@@ -48,7 +48,7 @@ async function checkUser() {
                 const cells = await response.json();
 
                 cells.forEach(cell => {
-                    renderM(cell.cell_id, cell.code || "");
+                    renderM(cell.id, cell.code || "");
                 });
             } catch (error) {
                 console.error("Error loading cells:", error.message);
@@ -143,17 +143,23 @@ async function checkUser() {
                 alert(`Error deleting cell: ${error.message}`);
             });
         }
-        function renderM(cellId, code = "") {
+        function renderM(id, code = "") {
+            console.log("Rendering Markdown Cell ID:", id); // 🔍 Debugging
+
+            if (id === undefined) {
+                console.error("❌ ERROR: Markdown Cell ID is undefined!");
+                return;
+            }
             const cellDiv = document.createElement("div");
-            cellDiv.id = `cell-${cellId}`;
+            cellDiv.id = `cell-${id}`;
             cellDiv.innerHTML = `
-        <textarea id="code-${cellId}" class="note-content" rows="5" cols="50" 
+        <textarea id="code-${id}" class="note-content" rows="5" cols="50" 
         style="width: 100%; min-height: 100px; padding: 10px; resize: none; overflow: hidden;" 
         placeholder="Write your markup here...">${code}</textarea>
         
-                <button class="save-note" onclick="runMark(${cellId})">Run Markup</button>
-                <button class="delete-note" onclick="deleteMark(${cellId})">Delete Cell</button>
-                <div class="output" id="outputm-${cellId}">Output will appear here...</div>
+                <button class="save-note" onclick="runMark(${id})">Run Markup</button>
+                <button class="delete-note" onclick="deleteMark(${id})">Delete Cell</button>
+                <div class="output" id="outputm-${id}">Output will appear here...</div>
             `;
         
             cellsContainer.appendChild(cellDiv);
@@ -180,8 +186,8 @@ async function checkUser() {
                 alert("Error adding cell: " + error.message);
             }
         });
-        function deleteMark(cell_id) {
-            const url = `/notebook/markup/${cell_id}/delete/`;
+        function deleteMark(id) {
+            const url = `/notebook/markup/${id}/delete/`;
             console.log(url);
         
             fetch(url, {
@@ -196,7 +202,7 @@ async function checkUser() {
             .then((data) => {
                 alert(data.message || "Cell deleted successfully");
                 // Remove the cell element from the DOM
-                const cellDiv = document.getElementById(`cell-${cell_id}`);
+                const cellDiv = document.getElementById(`cell-${id}`);
                 if (cellDiv) {
                     cellDiv.remove();
                 }
@@ -205,18 +211,21 @@ async function checkUser() {
                 alert(`Error deleting cell: ${error.message}`);
             });
         }
-        function runMark (cellId) {
-            const codeInput = document.getElementById(`code-${cellId}`);
-            const outputDiv = document.getElementById(`outputm-${cellId}`);
-        
+        function runMark (id) {
+            const codeInput = document.getElementById(`code-${id}`);
+            const outputDiv = document.getElementById(`outputm-${id}`);
+            console.log("dfdsfdsfds"+id);
+            console.log("gog");
             if (!codeInput || !outputDiv) {
+                console.log("hmm");
                 return;
             }
         
             const code = codeInput.value;
-        
+            console.log(id);
+            console.log(code);
             // Construct the URL to the Flask route with the cellId
-            const url = `/notebook/markup/${cellId}/run/`;
+            const url = `/notebook/markup/${id}/run/`;
         
             // Send the Markdown content to the server
             fetch(url, {
